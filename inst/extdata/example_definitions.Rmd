@@ -1,0 +1,20 @@
+---
+output: html_document
+---
+
+## Normal distribution
+
+A distribution commonly found in nature.
+
+```{r}
+hist(rnorm(10000))
+```
+
+
+## Uniform distribution
+
+Another distribution.
+
+```{r}
+hist(runif(10000))
+```
