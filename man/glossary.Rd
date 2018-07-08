@@ -4,8 +4,8 @@
 \alias{glossary}
 \title{Glossary class}
 \usage{
-glossary(definitions_path, glossary_path, name = "Glossary",
-  terms_used = c())
+glossary(definitions_path, glossary_path = knitr::current_input(),
+  name = "Glossary", terms_used = c(), header_level = 3)
 }
 \arguments{
 \item{definitions_path}{Where the the definitions of terms are stored. This
@@ -22,6 +22,9 @@ glossary.}
 \item{terms_used}{The terms that will be used. Adding terms to the
 constructor (instead of `my_gloss$add("new term")`) will include them as if
 they were added with `my_gloss$add()`.}
+
+\item{header_level}{How big the headers are for each term in the rendered
+glossary. Larger numbers mean smaller titles.}
 }
 \value{
 An `R6Class` object of class `Glossary`

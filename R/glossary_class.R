@@ -13,6 +13,8 @@
 #' @param terms_used The terms that will be used. Adding terms to the
 #'   constructor (instead of `my_gloss$add("new term")`) will include them as if
 #'   they were added with `my_gloss$add()`.
+#' @param header_level How big the headers are for each term in the rendered
+#'   glossary. Larger numbers mean smaller titles.
 #'
 #' @return An `R6Class` object of class `Glossary`
 #' @family classes
@@ -23,12 +25,13 @@
 #' }
 #'
 #' @export
-glossary <- function(definitions_path, glossary_path, name = "Glossary", terms_used = c()) {
+glossary <- function(definitions_path, glossary_path = knitr::current_input(), name = "Glossary", terms_used = c(), header_level = 3) {
   Glossary$new(
     definitions_path = definitions_path,
     glossary_path = glossary_path,
     name = name,
-    terms_used = terms_used
+    terms_used = terms_used,
+    header_level = header_level
   )
 }
 
@@ -40,12 +43,13 @@ Glossary <- R6::R6Class(
     glossary_path = NULL, # The file(s) the glossary will be added to
     terms_used = c(), # The terms used so far in this glossary
 
-    initialize = function(definitions_path, glossary_path, name = "Glossary", terms_used = c()) {
+    initialize = function(definitions_path, glossary_path, name = "Glossary", terms_used = c(), header_level = 3) {
       self$definitions_path <- definitions_path
       self$glossary_path <- glossary_path
       self$name <- name
       self$terms_used <- terms_used
-      private$term_html <- render_definitions(definitions_path)
+      private$term_html <- render_definitions_html(definitions_path, header_level = header_level)
+      private$term_rmd <- render_definitions_rmd(definitions_path, header_level = header_level)
     },
 
     print = function(indent = "  ") {
@@ -65,26 +69,37 @@ Glossary <- R6::R6Class(
         stop("Glossary terms must be of length 1.")
       }
       if (! new_term %in% names(private$term_html)) {
-        stop('The term "', new_term, '" cannot be found in the definitions at "', definitions_path, "'")
+        stop(paste0('The term "', new_term, '" cannot be found in the definitions at "', self$definitions_path, "'"))
       }
       if (! new_term %in% self$terms_used) {
         self$terms_used <- c(self$terms_used, new_term)
+        new_term <- paste0('**', new_term, '**')
       }
+      return(new_term)
     },
 
-    render = function() {
-      cat(paste0(private$term_html[sort(self$terms_used)], collapse = "\n"))
+    render = function(mode = "html") {
+      if (mode == "md") {
+        output <- paste0(private$term_rmd[sort(self$terms_used)], collapse = "\n")
+      } else if (mode == "html") {
+        output <- paste0(private$term_html[sort(self$terms_used)], collapse = "\n")
+      } else {
+        stop("mode must be 'html' or 'md'")
+      }
+
+      knitr::asis_output(output)
     }
   ),
 
   private = list(
-    term_html = NULL
+    term_html = NULL,
+    term_rmd = NULL
   )
 )
 
 
 
-render_definitions <- function(definition_path) {
+render_definitions_html <- function(definition_path, header_level = 3) {
   # Render Rmd file into HTML and save as a vector of length 1
   output_path <- tempfile()
   rmarkdown::render(definition_path, output_format = "html_document", output_file = output_path)
@@ -93,12 +108,38 @@ render_definitions <- function(definition_path) {
   # Extract the rendered HTML for each definition
   parsed_html <- xml2::read_html(raw_html)
   parsed_divs <- xml2::xml_find_all(parsed_html, "//div/div")
-  parsed_term_html <- as.character(parsed_divs[grepl(parsed_divs,  pattern = "section level2", fixed = TRUE)])
+  parsed_term_html <- as.character(parsed_divs[grepl(parsed_divs,  pattern = "section")])
 
-  # Name by term annd return
+  # Reset header level
+  parsed_term_html <- sub(parsed_term_html, pattern = 'class="section level[0-9]{1}"',
+                          replacement = paste0('class="section level', header_level, '"'))
+  parsed_term_html <- sub(parsed_term_html, pattern = '<h[0-9]{1}>',
+                          replacement = paste0('<h', header_level, '>'))
+  parsed_term_html <- sub(parsed_term_html, pattern = '</h[0-9]{1}>',
+                          replacement = paste0('</h', header_level, '>'))
+
+  # Name by term and return
   names(parsed_term_html) <- stringr::str_match(parsed_term_html, "<h[0-9]{1}>(.+)</h[0-9]{1}>")[,2]
   return(parsed_term_html)
 }
 
 
+render_definitions_rmd <- function(definition_path, header_level = 3) {
+  raw_rmd <- readr::read_file(definition_path)
+
+  # Extract the rendered HTML for each definition
+  parsed_rmd <- stringr::str_split(raw_rmd, "\n#{1,5}")[[1]][-1]
+  parsed_rmd <- trimws(parsed_rmd)
+  term_names <- stringr::str_match(parsed_rmd, "^(.+)\n")[,2]
+  parsed_rmd <- sub(parsed_rmd, pattern = "^(.+?)\n", replacement = "")
+  parsed_rmd <- trimws(parsed_rmd)
+
+  # Add headers and spacing
+  parsed_rmd <- paste0(paste0(rep("#", header_level), collapse = ""), " ",
+                       term_names, "\n\n", parsed_rmd, "\n\n")
+
+  # Name by term and return
+  names(parsed_rmd) <- term_names
+  return(parsed_rmd)
+}
 
