@@ -4,8 +4,8 @@
 \alias{glossary}
 \title{Glossary class}
 \usage{
-glossary(definitions_path, glossary_path = knitr::current_input(),
-  name = "Glossary", terms_used = c(), header_level = 3)
+glossary(definitions_path, glossary_path = "", terms_used = c(),
+  header_level = 3)
 }
 \arguments{
 \item{definitions_path}{Where the the definitions of terms are stored. This
@@ -14,9 +14,6 @@ text.}
 
 \item{glossary_path}{The file the glossary will be added to. This is used to
 link glossary terms in the text to their definitions in the rendered
-glossary.}
-
-\item{name}{The name of the glossary. Useful if you have more than one
 glossary.}
 
 \item{terms_used}{The terms that will be used. Adding terms to the

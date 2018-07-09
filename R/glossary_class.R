@@ -8,8 +8,6 @@
 #' @param glossary_path The file the glossary will be added to. This is used to
 #'   link glossary terms in the text to their definitions in the rendered
 #'   glossary.
-#' @param name The name of the glossary. Useful if you have more than one
-#'   glossary.
 #' @param terms_used The terms that will be used. Adding terms to the
 #'   constructor (instead of `my_gloss$add("new term")`) will include them as if
 #'   they were added with `my_gloss$add()`.
@@ -25,11 +23,10 @@
 #' }
 #'
 #' @export
-glossary <- function(definitions_path, glossary_path = knitr::current_input(), name = "Glossary", terms_used = c(), header_level = 3) {
+glossary <- function(definitions_path, glossary_path = "", terms_used = c(), header_level = 3) {
   Glossary$new(
     definitions_path = definitions_path,
     glossary_path = glossary_path,
-    name = name,
     terms_used = terms_used,
     header_level = header_level
   )
@@ -38,15 +35,13 @@ glossary <- function(definitions_path, glossary_path = knitr::current_input(), n
 Glossary <- R6::R6Class(
   "Glossary",
   public = list(
-    name = NULL, # The name of the glossary
     definitions_path = NULL, # Where the the definitions of terms are stored
     glossary_path = NULL, # The file(s) the glossary will be added to
     terms_used = c(), # The terms used so far in this glossary
 
-    initialize = function(definitions_path, glossary_path, name = "Glossary", terms_used = c(), header_level = 3) {
+    initialize = function(definitions_path, glossary_path, terms_used = c(), header_level = 3) {
       self$definitions_path <- definitions_path
       self$glossary_path <- glossary_path
-      self$name <- name
       self$terms_used <- terms_used
       private$term_html <- render_definitions_html(definitions_path, header_level = header_level)
       private$term_rmd <- render_definitions_rmd(definitions_path, header_level = header_level)
@@ -54,10 +49,9 @@ Glossary <- R6::R6Class(
 
     print = function(indent = "  ") {
       cat(paste0(indent, "<Glossary>\n"))
-      cat(paste0(indent, paste0("name: ", name)))
-      cat(paste0(indent, paste0("definitions_path: ", definitions_path)))
-      cat(paste0(indent, paste0("glossary_path: ", paste0(glossary_path, collapse = ", "))))
-      cat(paste0(indent, paste0("terms_used: ", paste0(terms_used, collapse = ", "))))
+      cat(paste0(indent, paste0("definitions_path: ", self$definitions_path, "\n")))
+      cat(paste0(indent, paste0("glossary_path: ", paste0(self$glossary_path, collapse = ", "), "\n")))
+      cat(paste0(indent, paste0("terms_used: ", paste0(self$terms_used, collapse = ", "), "\n")))
       invisible(self)
     },
 
@@ -73,9 +67,17 @@ Glossary <- R6::R6Class(
       }
       if (! new_term %in% self$terms_used) {
         self$terms_used <- c(self$terms_used, new_term)
-        new_term <- paste0('**', new_term, '**')
+        # new_term <- paste0('**', new_term, '**')
       }
-      return(new_term)
+
+      # Format link to glossary
+      if (is.null(self$glossary_path) || self$glossary_path == "" ) {
+        glossary_path_html <- ""
+      } else {
+        glossary_path_html <- paste0(tools::file_path_sans_ext(self$glossary_path), ".html")
+      }
+      output <- paste0('<a href ="', glossary_path_html, '#', term_anchor_name(new_term), '">', new_term, '</a>')
+      return(output)
     },
 
     render = function(mode = "html") {
@@ -88,8 +90,21 @@ Glossary <- R6::R6Class(
       }
 
       knitr::asis_output(output)
+    },
+
+    render_all = function(mode = "html") {
+      if (mode == "md") {
+        output <- paste0(private$term_rmd[sort(names(private$term_rmd))], collapse = "\n")
+      } else if (mode == "html") {
+        output <- paste0(private$term_html[sort(names(private$term_rmd))], collapse = "\n")
+      } else {
+        stop("mode must be 'html' or 'md'")
+      }
+
+      knitr::asis_output(output)
     }
   ),
+
 
   private = list(
     term_html = NULL,
@@ -109,17 +124,21 @@ render_definitions_html <- function(definition_path, header_level = 3) {
   parsed_html <- xml2::read_html(raw_html)
   parsed_divs <- xml2::xml_find_all(parsed_html, "//div/div")
   parsed_term_html <- as.character(parsed_divs[grepl(parsed_divs,  pattern = "section")])
+  term_names <-  stringr::str_match(parsed_term_html, "<h[0-9]{1}>\n*(.+)\n*</h[0-9]{1}>")[,2]
 
-  # Reset header level
+  # Reset header level and add anchor
   parsed_term_html <- sub(parsed_term_html, pattern = 'class="section level[0-9]{1}"',
                           replacement = paste0('class="section level', header_level, '"'))
-  parsed_term_html <- sub(parsed_term_html, pattern = '<h[0-9]{1}>',
-                          replacement = paste0('<h', header_level, '>'))
+  anchor_name <- term_anchor_name(term_names)
+  parsed_term_html <- vapply(seq_along(parsed_term_html), FUN.VALUE = character(1), function(i) {
+    sub(parsed_term_html[i], pattern = '<h[0-9]{1}>',
+        replacement = paste0('<a name=', anchor_name[i], '><h', header_level, '>'))
+  })
   parsed_term_html <- sub(parsed_term_html, pattern = '</h[0-9]{1}>',
-                          replacement = paste0('</h', header_level, '>'))
+                          replacement = paste0('</h', header_level, '></a>'))
 
   # Name by term and return
-  names(parsed_term_html) <- stringr::str_match(parsed_term_html, "<h[0-9]{1}>(.+)</h[0-9]{1}>")[,2]
+  names(parsed_term_html) <- term_names
   return(parsed_term_html)
 }
 
@@ -143,3 +162,7 @@ render_definitions_rmd <- function(definition_path, header_level = 3) {
   return(parsed_rmd)
 }
 
+
+term_anchor_name <- function(term_name) {
+  paste0(gsub(pattern = " ", replacement = "_", term_name), "_anchor")
+}
