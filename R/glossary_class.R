@@ -55,19 +55,22 @@ Glossary <- R6::R6Class(
       invisible(self)
     },
 
-    add = function(new_term) {
+    add = function(new_term, shown = NULL) {
+      if (is.null(shown)) {
+        shown <- new_term
+      }
+
       if (! is.character(new_term)) {
         stop("Glossary terms must be of type `character`.")
       }
       if (length(new_term) != 1) {
         stop("Glossary terms must be of length 1.")
       }
-      if (! new_term %in% names(private$term_html)) {
+      if (! tolower(new_term) %in% tolower(names(private$term_html))) {
         stop(paste0('The term "', new_term, '" cannot be found in the definitions at "', self$definitions_path, "'"))
       }
-      if (! new_term %in% self$terms_used) {
-        self$terms_used <- c(self$terms_used, new_term)
-        # new_term <- paste0('**', new_term, '**')
+      if (! tolower(new_term) %in% tolower(self$terms_used)) {
+        self$terms_used <- c(self$terms_used, tolower(new_term))
       }
 
       # Format link to glossary
@@ -76,7 +79,7 @@ Glossary <- R6::R6Class(
       } else {
         glossary_path_html <- paste0(tools::file_path_sans_ext(self$glossary_path), ".html")
       }
-      output <- paste0('<a href ="', glossary_path_html, '#', term_anchor_name(new_term), '">', new_term, '</a>')
+      output <- paste0('<a href ="', glossary_path_html, '#', term_anchor_name(new_term), '">', shown, '</a>')
       return(output)
     },
 
@@ -96,7 +99,7 @@ Glossary <- R6::R6Class(
       if (mode == "md") {
         output <- paste0(private$term_rmd[sort(names(private$term_rmd))], collapse = "\n")
       } else if (mode == "html") {
-        output <- paste0(private$term_html[sort(names(private$term_rmd))], collapse = "\n")
+        output <- paste0(private$term_html[sort(names(private$term_html))], collapse = "\n")
       } else {
         stop("mode must be 'html' or 'md'")
       }
@@ -117,7 +120,7 @@ Glossary <- R6::R6Class(
 render_definitions_html <- function(definition_path, header_level = 3) {
   # Render Rmd file into HTML and save as a vector of length 1
   output_path <- tempfile()
-  rmarkdown::render(definition_path, output_format = "html_document", output_file = output_path)
+  rmarkdown::render(definition_path, output_format = rmarkdown::html_document(), output_file = output_path, quiet = TRUE)
   raw_html <- readr::read_file_raw(output_path)
 
   # Extract the rendered HTML for each definition
@@ -132,10 +135,10 @@ render_definitions_html <- function(definition_path, header_level = 3) {
   anchor_name <- term_anchor_name(term_names)
   parsed_term_html <- vapply(seq_along(parsed_term_html), FUN.VALUE = character(1), function(i) {
     sub(parsed_term_html[i], pattern = '<h[0-9]{1}>',
-        replacement = paste0('<a name=', anchor_name[i], '><h', header_level, '>'))
+        replacement = paste0('<h', header_level, '><a id=', anchor_name[i], '>'))
   })
   parsed_term_html <- sub(parsed_term_html, pattern = '</h[0-9]{1}>',
-                          replacement = paste0('</h', header_level, '></a>'))
+                          replacement = paste0('</a></h', header_level, '>'))
 
   # Name by term and return
   names(parsed_term_html) <- term_names
@@ -164,5 +167,5 @@ render_definitions_rmd <- function(definition_path, header_level = 3) {
 
 
 term_anchor_name <- function(term_name) {
-  paste0(gsub(pattern = " ", replacement = "_", term_name), "_anchor")
+  paste0(gsub(pattern = " ", replacement = "_", tolower(term_name)), "_anchor")
 }
