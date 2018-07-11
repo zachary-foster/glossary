@@ -66,11 +66,11 @@ Glossary <- R6::R6Class(
       if (length(new_term) != 1) {
         stop("Glossary terms must be of length 1.")
       }
-      if (! tolower(new_term) %in% tolower(names(private$term_html))) {
+      if (! standardize(new_term) %in% standardize(names(private$term_html))) {
         stop(paste0('The term "', new_term, '" cannot be found in the definitions at "', self$definitions_path, "'"))
       }
-      if (! tolower(new_term) %in% tolower(self$terms_used)) {
-        self$terms_used <- c(self$terms_used, tolower(new_term))
+      if (! standardize(new_term) %in% standardize(self$terms_used)) {
+        self$terms_used <- c(self$terms_used, standardize(new_term))
       }
 
       # Format link to glossary
@@ -80,6 +80,12 @@ Glossary <- R6::R6Class(
         glossary_path_html <- paste0(tools::file_path_sans_ext(self$glossary_path), ".html")
       }
       output <- paste0('<a href ="', glossary_path_html, '#', term_anchor_name(new_term), '">', shown, '</a>')
+
+      # Add html div of glossary contents to reveal when cursor hovers
+      # term_gloss_html <- private$term_html[tolower(new_term) == tolower(names(private$term_html))]
+      # term_gloss_html <- sub(term_gloss_html, pattern = "^<div ", replacement = '<div class="glossary_div" ')
+      # output <- paste0(output, "\n", private$term_html)
+
       return(output)
     },
 
@@ -135,7 +141,7 @@ render_definitions_html <- function(definition_path, header_level = 3) {
   anchor_name <- term_anchor_name(term_names)
   parsed_term_html <- vapply(seq_along(parsed_term_html), FUN.VALUE = character(1), function(i) {
     sub(parsed_term_html[i], pattern = '<h[0-9]{1}>',
-        replacement = paste0('<h', header_level, '><a id=', anchor_name[i], '>'))
+        replacement = paste0('<h', header_level, '><a class="glossary_anchor" id="', anchor_name[i], '">'))
   })
   parsed_term_html <- sub(parsed_term_html, pattern = '</h[0-9]{1}>',
                           replacement = paste0('</a></h', header_level, '>'))
@@ -167,5 +173,12 @@ render_definitions_rmd <- function(definition_path, header_level = 3) {
 
 
 term_anchor_name <- function(term_name) {
-  paste0(gsub(pattern = " ", replacement = "_", tolower(term_name)), "_anchor")
+  paste0(gsub(pattern = " ", replacement = "_", standardize(term_name)), "_anchor")
+}
+
+
+standardize <- function(term) {
+  term <- tolower(term)
+  term <- gsub(term, pattern = "’", replacement = "'", fixed = TRUE)
+  return(term)
 }
