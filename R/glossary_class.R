@@ -67,7 +67,7 @@ Glossary <- R6::R6Class(
         stop("Glossary terms must be of length 1.")
       }
       if (! tolower(new_term) %in% tolower(names(private$term_html))) {
-        stop(paste0('The term "', new_term, '" cannot be found in the definitions at "', self$definitions_path, "'"))
+        warning(paste0('The term "', new_term, '" cannot be found in the definitions at "', self$definitions_path, "'"))
       }
       if (! tolower(new_term) %in% tolower(self$terms_used)) {
         self$terms_used <- c(self$terms_used, tolower(new_term))
