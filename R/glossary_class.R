@@ -67,7 +67,9 @@ Glossary <- R6::R6Class(
         stop("Glossary terms must be of length 1.")
       }
       if (! standardize(new_term) %in% standardize(names(private$term_html))) {
-        stop(paste0('The term "', new_term, '" cannot be found in the definitions at "', self$definitions_path, "'"))
+        warning(paste0('The term "', new_term, '" cannot be found in the definitions at "',
+                       self$definitions_path, "' so no link will be added."))
+        return(shown)
       }
       if (! standardize(new_term) %in% standardize(self$terms_used)) {
         self$terms_used <- c(self$terms_used, standardize(new_term))
