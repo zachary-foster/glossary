@@ -9,7 +9,9 @@ This is an R package to add a glossary to an Rmarkdown-based website and
 facilitate linking terms to it. Glossary terms are defined in an Rmd
 file not rendered on the website. This file is rendered by the package
 into HTML and the `<div>`s containing glossary terms are extracted and
-modified to contain targets for HTML anchors.
+modified to contain targets for HTML anchors. An example of a definition
+file is included in the pacakge and can be viewed
+[here](inst/extdata/example_definitions.Rmd).
 
     library(glossary)
     glossary_def_path <- system.file(package = "glossary", "extdata/example_definitions.Rmd")
@@ -53,8 +55,8 @@ The `gloss$render_all()` function can then be used to render the
 glossary and the links from the terms used in the text to the rendered
 glossary definitions:
 
-Glossary
---------
+Example glossary
+----------------
 
     gloss$render_all()
 
