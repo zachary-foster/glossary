@@ -34,8 +34,10 @@ For example, writing:
 
 ---
 
-We used the  &#768;r gloss$add("glossary")&#36;#768; &#768;r gloss&#36;add("r package")&#768; to make our glossary!
-Too bad its not on &#768;r gloss&#36;add("The Comprehensive R Archive Network (CRAN)", shown = "CRAN")&#768; yet.
+```{asis}
+We used the amazing `r gloss$add("glossary")` `r gloss$add("r package")` to make our glossary!
+Too bad its not on `r gloss$add("The Comprehensive R Archive Network (CRAN)", shown = "CRAN")` yet.
+```
 
 ---
 
