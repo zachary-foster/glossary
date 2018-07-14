@@ -24,16 +24,25 @@ page, so the `glossary_path` option was not used.
 To link a term, use the `add` function of the glossary object in an
 inline R chunk. For example, writing:
 
-    We used the &#768;r gloss$add("glossary")&#768; &#768;r gloss$add("r package")&#768; to make our glossary!
-    Too bad its not on &#768;r gloss$add("The Comprehensive R Archive Network (CRAN)", shown = "CRAN")&#768; yet.
+------------------------------------------------------------------------
+
+We used the ̀r gloss$add("glossary")&\#768; &\#768;r gloss$add("r
+package")̀ to make our glossary! Too bad its not on ̀r gloss$add("The
+Comprehensive R Archive Network (CRAN)", shown = "CRAN")̀ yet.
+
+------------------------------------------------------------------------
 
 Would render to:
+
+------------------------------------------------------------------------
 
 We used the amazing <a href ="#glossary_anchor">glossary</a>
 <a href ="#r_package_anchor">r package</a> to make our glossary! Too bad
 its not on
 <a href ="#the_comprehensive_r_archive_network_(cran)_anchor">CRAN</a>
 yet.
+
+------------------------------------------------------------------------
 
 The terms are case-insensitive and the `shown` option can be used to
 change what text is used to link to the term.

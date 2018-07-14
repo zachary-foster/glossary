@@ -32,15 +32,21 @@ In this example, we will render the glossary terms on this page, so the `glossar
 To link a term, use the `add` function of the glossary object in an inline R chunk.
 For example, writing:
 
-```
+---
+
 We used the &#768;r gloss$add("glossary")&#768; &#768;r gloss$add("r package")&#768; to make our glossary!
 Too bad its not on &#768;r gloss$add("The Comprehensive R Archive Network (CRAN)", shown = "CRAN")&#768; yet.
-```
+
+---
 
 Would render to:
 
+---
+
 We used the amazing `r gloss$add("glossary")` `r gloss$add("r package")` to make our glossary!
 Too bad its not on `r gloss$add("The Comprehensive R Archive Network (CRAN)", shown = "CRAN")` yet.
+
+---
 
 The terms are case-insensitive and the `shown` option can be used to change what text is used to link to the term.
 
