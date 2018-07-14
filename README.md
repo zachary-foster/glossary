@@ -26,9 +26,9 @@ inline R chunk. For example, writing:
 
 ------------------------------------------------------------------------
 
-We used the ̀r gloss$add("glossary")&\#768; &\#768;r gloss$add("r
-package")̀ to make our glossary! Too bad its not on ̀r gloss$add("The
-Comprehensive R Archive Network (CRAN)", shown = "CRAN")̀ yet.
+We used the ̀r gloss$add("glossary")$\#768; ̀r gloss$add("r package")̀ to
+make our glossary! Too bad its not on ̀r gloss$add("The Comprehensive R
+Archive Network (CRAN)", shown = "CRAN")̀ yet.
 
 ------------------------------------------------------------------------
 
