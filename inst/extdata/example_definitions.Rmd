@@ -2,19 +2,71 @@
 output: html_document
 ---
 
-## Normal distribution
+## Glossary
 
-A distribution commonly found in nature.
+An R package to add a glossary to an Rmarkdown-based website and facilitate linking terms to it.
+
+## Variable
+
+In programming, a variable is a name associated with a value that can change or "vary".
+This is similar to how the word is used in math.
+For example, the equation for a line is `y = mx + b`.
+In this equation, all of the letters are variables that can represent any number.
+
+## Function
+
+Any command or operation the does something in a programming language is a function.
+Functions often have inputs that influence what the output is, but some don't have inputs.
+Functions will usually return some type of output, but they might not, or they might have an effect besides what they return (this is rare in R, but common in other programming languages).
+The concept of functions, like variables, comes from math.
+For example, the equation for a line is `y = mx + b`.
+In R, you could make a function to return `y` given the values of `m`, `x`, and `b`, like so: 
 
 ```{r}
-hist(rnorm(10000))
+line <- function(m, x, b) {
+  return(m * x + b)
+}
+```
+
+And find the value for y, for a given set of inputs like so: 
+
+```{r}
+line(m = 2.5, x = 3, b = -1)
 ```
 
 
-## Uniform distribution
+## Class 
 
-Another distribution.
+A class is a defined set of variables along with a set of functions designed to work with those variable.
+The specifics of how classes are structured vary greatly between programming languages, but the concepts are similar.
+For example, you might have a class called "Dog" that contained the dogs age (number), the dogs breed (text), and the name of the dogs owner (text).
+With those variables, the "Dog" class might have functions that make the dog a year older or change the owner of the dog, etc.
+
+## Object
+
+An instance of a class.
+In other words, a data with a defined type and functions designed to operate on it.
+For example, if you had a class for "Dog", you might have an object of that class stored in a variable called "fido" and another called "scraps". 
+
+## The Comprehensive R Archive Network (CRAN)
+
+A volunteer-run organization that hosts R packages and enforces standards for how they should be structured.
+When you install an R package using `install.packages`, you are installing from CRAN.
+CRAN is one of the major reasons R packages are so easy to install.
+
+## R package
+
+An R package is a set of user-defined functions organized so that people can easily share and use them.
+Most of the functions used by most R users are from R packages rather than those supplied by base R.
+R packages can be installed in a few ways, but the most common is to download them from The Comprehensive R Archive Network (CRAN) using the `install.packages` function.
+For example `stringr` is an R package that supplies functions to work with text.
+
+```{r eval = FALSE}
+install.packages("stringr")
+```
+
+Once installed, a package must be "loaded" using the `library` function before any functions it supplies can be used:
 
 ```{r}
-hist(runif(10000))
+library("stringr")
 ```

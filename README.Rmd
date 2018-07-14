@@ -1,0 +1,50 @@
+---
+output: md_document
+---
+
+Glossary
+========
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+[![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
+
+This is an R package to add a glossary to an Rmarkdown-based website and facilitate linking terms to it.
+Glossary terms are defined in an Rmd file not rendered on the website.
+This file is rendered by the package into HTML and the `<div>`s containing glossary terms are extracted and modified to contain targets for HTML anchors.
+
+```{r}
+library(glossary)
+glossary_def_path <- system.file(package = "glossary", "extdata/example_definitions.Rmd")
+gloss <- glossary(definitions_path = glossary_def_path) # returns an R6 class
+```
+
+If the glossary is to be on the same page as the terms, then only the path to the term definition Rmd is needed, otherwise the `glossary_path` option must be used to specify the path to the Rmd file that will render the glossary.
+In this example, we will render the glossary terms on this page, so the `glossary_path` option was not used.
+
+To link a term, use the `add` function of the glossary object in an inline R chunk.
+For example, writing:
+
+```
+We used the amazing `r gloss$add("glossary")` `r gloss$add("r package")` to make our glossary!
+```
+
+Would render to:
+
+We used the amazing `r gloss$add("glossary")` `r gloss$add("r package")` to make our glossary!
+
+The `gloss$render_all()` function can then be used to render the glossary and the links from the terms used in the text to the rendered glossary definitions:
+
+## Glossary
+
+```{r}
+gloss$render_all()
+```
+
