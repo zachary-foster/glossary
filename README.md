@@ -26,10 +26,10 @@ inline R chunk. For example, writing:
 
 ------------------------------------------------------------------------
 
-We used the amazing `` `&#114; gloss$add("glossary")` ``
-`` `&#114; gloss$add("r package")` `` to make our glossary! Too bad its
-not on
-`` `&#114; gloss$add("The Comprehensive R Archive Network (CRAN)", shown = "CRAN")` ``
+We used the amazing `` `r gloss$add("glossary")` ``
+`` `r gloss$add("r package")` `` to make our glossary! Too bad its not
+on
+`` `r gloss$add("The Comprehensive R Archive Network (CRAN)", shown = "CRAN")` ``
 yet.
 
 ------------------------------------------------------------------------
